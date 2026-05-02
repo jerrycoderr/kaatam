@@ -1,6 +1,6 @@
-const Spotify = require('./spotify');
-const downloader = require('./downloader');
-const Parser = require('./parser');
+const Spotify = require('../lib/spotify');
+const downloader = require('../lib/downloader');
+const Parser = require('../lib/parser');
 
 // Instantiate the Spotify class so it can be used directly
 const spotifyInstance = new Spotify();
