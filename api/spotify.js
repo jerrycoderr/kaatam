@@ -112,7 +112,10 @@ class Spotify {
   }
 
   async getToken() {
+  try {
     if (this.is.defaults.headers.authorization) return true;
+
+    const sts = Math.floor(Date.now() / 1000);
 
     const { data: token } = await this.is.get(
       "https://open.spotify.com/api/token",
@@ -121,8 +124,8 @@ class Spotify {
           reason: "init",
           productType: "web-player",
           totp: this.generateTOTP(Date.now()),
-          totpServer: this.generateTOTP(Date.now()),
-          totpVer: cfg.version
+          totpServer: this.generateTOTP(sts * 1000), // ✅ FIXED
+          totpVer: String(cfg.version)
         }
       }
     );
@@ -132,18 +135,33 @@ class Spotify {
       {
         client_data: {
           client_version: cfg.client_version,
-          client_id: token.clientId
+          client_id: token.clientId,
+          js_sdk_data: {
+            device_brand: "unknown",
+            device_model: "unknown",
+            os: "linux",
+            os_version: "24.04",
+            device_id: crypto.randomUUID(),
+            device_type: "computer"
+          }
         }
       }
     );
 
     Object.assign(this.is.defaults.headers, {
+      "accept-language": "en",
+      "app-platform": "WebPlayer",
       authorization: `Bearer ${token.accessToken}`,
-      "client-token": client.granted_token.token
+      "client-token": client.granted_token.token,
+      "spotify-app-version": cfg.client_version
     });
 
     return true;
+  } catch (err) {
+    console.log("TOKEN ERROR:", err?.response?.data || err.message);
+    return false;
   }
+}
 
   async query(name, vars) {
     await this.getToken();
@@ -176,14 +194,20 @@ class Spotify {
   }
 
   async search(q) {
-    const res = await this.query("search", {
-      searchTerm: q,
-      offset: 0,
-      limit: 5
-    });
+  const res = await this.query("search", {
+    searchTerm: q,
+    offset: 0,
+    limit: 10,
+    numberOfTopResults: 5,
+    includeAudiobooks: true,
+    includeArtistHasConcertsField: false,
+    includePreReleases: true,
+    includeAuthors: false,
+    includeEpisodeContentRatingsV2: false
+  });
 
-    return this.parser.parseSearch(res.data.searchV2);
-  }
+  return this.parser.parseSearch(res.data.searchV2);
+}
 }
 
 // ================== DOWNLOADER ==================
