@@ -1,4 +1,4 @@
-const Spotify = require("/spotify"); // adjust path if needed
+const Spotify = require("../lib/spotify"); // adjust path if needed
 
 // helper to extract track ID
 function extractTrackId(input) {
