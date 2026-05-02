@@ -124,7 +124,7 @@ class Spotify {
           reason: "init",
           productType: "web-player",
           totp: this.generateTOTP(Date.now()),
-          totpServer: this.generateTOTP(sts * 1000), // ✅ FIXED
+          totpServer: this.generateTOTP(sts * 1000),
           totpVer: String(cfg.version)
         }
       }
@@ -148,6 +148,10 @@ class Spotify {
       }
     );
 
+    if (!client?.granted_token?.token) {
+      throw new Error("Client token missing");
+    }
+
     Object.assign(this.is.defaults.headers, {
       "accept-language": "en",
       "app-platform": "WebPlayer",
@@ -157,12 +161,12 @@ class Spotify {
     });
 
     return true;
+
   } catch (err) {
     console.log("TOKEN ERROR:", err?.response?.data || err.message);
     return false;
   }
 }
-
   async query(name, vars) {
     await this.getToken();
 
