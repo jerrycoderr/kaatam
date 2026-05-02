@@ -1,7 +1,6 @@
 const Spotify = require("../lib/spotify");
 const downloader = require("../lib/downloader");
 
-// extract track ID
 function extractTrackId(input) {
   if (!input) return null;
 
@@ -16,10 +15,7 @@ export default async function handler(req, res) {
     const { id, url, q } = req.query;
 
     const spotify = new Spotify();
-
-    // =========================
-    // 🔍 SEARCH MODE (?q=)
-    // =========================
+   
     if (q) {
       const search = await spotify.search(q);
 
@@ -39,9 +35,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // =========================
-    // 🎵 TRACK MODE (?id= or ?url=)
-    // =========================
     const trackId = extractTrackId(id || url);
 
     if (!trackId) {
@@ -62,9 +55,6 @@ export default async function handler(req, res) {
 
     let downloadData = null;
 
-    // =========================
-    // ⬇️ DOWNLOAD (only when URL provided)
-    // =========================
     if (url) {
       downloadData = await downloader(url);
     }
